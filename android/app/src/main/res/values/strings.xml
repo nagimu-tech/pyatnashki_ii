@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Пятнашки</string>
+    <string name="title">ПЯТНАШКИ</string>
+    <string name="subtitle">// SLIDING PUZZLE // HIGHTECH //</string>
+    <string name="btn_shuffle">// ПЕРЕМЕШАТЬ</string>
+    <string name="label_moves">ХОДОВ</string>
+    <string name="label_time">ВРЕМЯ</string>
+</resources>

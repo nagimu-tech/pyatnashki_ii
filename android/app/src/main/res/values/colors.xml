@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_dark">#FF050510</color>
+    <color name="bg_dark2">#FF0A0A20</color>
+    <color name="cyan">#FF00F5FF</color>
+    <color name="blue">#FF0066FF</color>
+    <color name="purple">#FFBF00FF</color>
+    <color name="tile_bg">#FF08082A</color>
+    <color name="tile_border">#3300F5FF</color>
+    <color name="correct_green">#FF00FF80</color>
+    <color name="correct_border">#6600FF80</color>
+    <color name="text_muted">#4400F5FF</color>
+    <color name="divider">#1A0066FF</color>
+    <color name="board_border_color">#FF0066FF</color>
+</resources>

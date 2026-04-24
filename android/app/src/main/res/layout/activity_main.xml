@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark">
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/title"
+        android:textColor="@color/cyan"
+        android:textSize="30sp"
+        android:fontFamily="monospace"
+        android:textStyle="bold"
+        android:letterSpacing="0.25"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="40dp" />
+
+    <!-- Subtitle -->
+    <TextView
+        android:id="@+id/tvSubtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/subtitle"
+        android:textColor="@color/text_muted"
+        android:textSize="8sp"
+        android:fontFamily="monospace"
+        android:letterSpacing="0.3"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="4dp" />
+
+    <!-- Stats row -->
+    <LinearLayout
+        android:id="@+id/statsRow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/tvSubtitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp">
+
+        <LinearLayout
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+            <TextView
+                android:id="@+id/tvMoves"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textColor="@color/cyan"
+                android:textSize="22sp"
+                android:fontFamily="monospace"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_moves"
+                android:textColor="@color/text_muted"
+                android:textSize="9sp"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.15" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="28dp"
+            android:background="@color/divider"
+            android:layout_marginHorizontal="16dp" />
+
+        <LinearLayout
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+            <TextView
+                android:id="@+id/tvTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="00:00"
+                android:textColor="@color/cyan"
+                android:textSize="22sp"
+                android:fontFamily="monospace"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_time"
+                android:textColor="@color/text_muted"
+                android:textSize="9sp"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.15" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Board outer (acts as glowing border) -->
+    <FrameLayout
+        android:id="@+id/boardOuter"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/board_border"
+        android:padding="2dp"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintTop_toBottomOf="@id/statsRow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btnShuffle"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintVertical_bias="0.5">
+
+        <FrameLayout
+            android:id="@+id/board"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/bg_dark2"
+            android:clipChildren="false" />
+    </FrameLayout>
+
+    <!-- Shuffle button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnShuffle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_shuffle"
+        android:textColor="@color/cyan"
+        android:textSize="12sp"
+        android:fontFamily="monospace"
+        android:letterSpacing="0.2"
+        app:backgroundTint="@android:color/transparent"
+        app:strokeColor="@color/cyan"
+        app:strokeWidth="1dp"
+        app:cornerRadius="2dp"
+        android:paddingHorizontal="36dp"
+        android:paddingVertical="14dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="28dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

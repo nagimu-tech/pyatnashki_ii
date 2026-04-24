@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ПЯТНАШКИ // HIGHTECH</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cyan:    #00f5ff;
+      --blue:    #0066ff;
+      --purple:  #bf00ff;
+      --dark:    #050510;
+      --dark2:   #0a0a20;
+      --dark3:   #0f0f30;
+      --tile-bg: #08082a;
+      --text:    #e0f0ff;
+      --glow-c:  rgba(0,245,255,0.5);
+      --glow-p:  rgba(191,0,255,0.4);
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--dark);
+      color: var(--text);
+      font-family: 'Orbitron', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Scanlines */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.15) 2px,
+        rgba(0,0,0,0.15) 4px
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .game-wrap {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+    }
+
+    .title {
+      font-size: 2.6rem;
+      font-weight: 900;
+      letter-spacing: 0.25em;
+      background: linear-gradient(135deg, var(--cyan), var(--blue), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      filter: drop-shadow(0 0 12px var(--glow-c));
+      line-height: 1;
+    }
+
+    .subtitle {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      color: rgba(0,245,255,0.45);
+      margin-top: 6px;
+    }
+
+    /* Stats */
+    .stats {
+      display: flex;
+      gap: 40px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      color: rgba(0,245,255,0.6);
+    }
+
+    .stat-val {
+      color: var(--cyan);
+      font-size: 1.4rem;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      display: block;
+      text-align: center;
+      text-shadow: 0 0 10px var(--glow-c);
+    }
+
+    .stat-label {
+      display: block;
+      text-align: center;
+      margin-top: 2px;
+    }
+
+    /* Board container */
+    .board-wrap {
+      position: relative;
+      padding: 3px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, var(--cyan), var(--blue), var(--purple), var(--cyan));
+      background-size: 300% 300%;
+      animation: borderAnim 4s linear infinite;
+      box-shadow:
+        0 0 20px var(--glow-c),
+        0 0 60px rgba(0,102,255,0.2),
+        inset 0 0 30px rgba(0,0,0,0.8);
+    }
+
+    @keyframes borderAnim {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 6px;
+      padding: 12px;
+      background: var(--dark2);
+      border-radius: 4px;
+      width: 360px;
+      height: 360px;
+    }
+
+    /* Tile */
+    .tile {
+      position: relative;
+      border-radius: 4px;
+      background: linear-gradient(145deg, #0d0d35, var(--tile-bg));
+      border: 1px solid rgba(0,245,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--cyan);
+      text-shadow: 0 0 12px var(--glow-c);
+      cursor: pointer;
+      transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease;
+      box-shadow: 0 0 8px rgba(0,245,255,0.08), inset 0 1px 0 rgba(255,255,255,0.04);
+      overflow: hidden;
+    }
+
+    .tile::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 40%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), transparent);
+      border-radius: 4px 4px 0 0;
+      pointer-events: none;
+    }
+
+    .tile:hover {
+      border-color: var(--cyan);
+      box-shadow:
+        0 0 16px var(--glow-c),
+        0 0 4px var(--cyan) inset;
+      transform: scale(1.04);
+      z-index: 2;
+    }
+
+    .tile.active {
+      animation: tilePress 0.12s ease;
+    }
+
+    @keyframes tilePress {
+      0%   { transform: scale(1.04); }
+      50%  { transform: scale(0.96); }
+      100% { transform: scale(1); }
+    }
+
+    .tile.empty {
+      background: transparent;
+      border-color: transparent;
+      box-shadow: none;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .tile.empty::before { display: none; }
+
+    /* Corner decoration on tiles */
+    .tile:not(.empty)::after {
+      content: '';
+      position: absolute;
+      bottom: 3px; right: 3px;
+      width: 5px; height: 5px;
+      border-right: 1px solid rgba(0,245,255,0.3);
+      border-bottom: 1px solid rgba(0,245,255,0.3);
+    }
+
+    /* Correct tile style */
+    .tile.correct {
+      border-color: rgba(0,255,128,0.4);
+      color: #00ff80;
+      text-shadow: 0 0 10px rgba(0,255,128,0.7);
+      box-shadow: 0 0 8px rgba(0,255,128,0.15);
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 16px;
+    }
+
+    .btn {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      padding: 12px 28px;
+      background: transparent;
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      border-radius: 3px;
+      cursor: pointer;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.2s, color 0.2s, background 0.2s;
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--cyan);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .btn:hover::before { opacity: 0.08; }
+
+    .btn:hover {
+      box-shadow: 0 0 18px var(--glow-c), 0 0 6px var(--cyan);
+      color: #fff;
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    .btn.btn-purple {
+      border-color: var(--purple);
+      color: var(--purple);
+    }
+
+    .btn.btn-purple::before { background: var(--purple); }
+
+    .btn.btn-purple:hover {
+      box-shadow: 0 0 18px var(--glow-p), 0 0 6px var(--purple);
+      color: #fff;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(5,5,16,0.85);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(6px);
+    }
+
+    .modal-overlay.show {
+      display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .modal {
+      position: relative;
+      padding: 3px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      box-shadow: 0 0 50px var(--glow-c), 0 0 80px var(--glow-p);
+      animation: modalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes modalIn {
+      from { transform: scale(0.6); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .modal-inner {
+      background: var(--dark2);
+      border-radius: 4px;
+      padding: 48px 56px;
+      text-align: center;
+      min-width: 340px;
+    }
+
+    .modal-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      animation: pulse 1.5s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { filter: drop-shadow(0 0 8px var(--glow-c)); }
+      50%       { filter: drop-shadow(0 0 20px var(--glow-c)); }
+    }
+
+    .modal-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+
+    .modal-sub {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.85rem;
+      color: rgba(0,245,255,0.55);
+      letter-spacing: 0.1em;
+      margin-bottom: 36px;
+      line-height: 1.6;
+    }
+
+    .modal-moves {
+      color: var(--cyan);
+      font-weight: 700;
+      text-shadow: 0 0 8px var(--glow-c);
+    }
+
+    .modal-btns {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    /* Responsive */
+    @media (max-width: 420px) {
+      .board { width: 300px; height: 300px; gap: 4px; padding: 8px; }
+      .tile { font-size: 1.3rem; }
+      .title { font-size: 1.8rem; }
+      .modal-inner { padding: 32px 24px; min-width: 280px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-wrap">
+    <div class="header">
+      <div class="title">ПЯТНАШКИ</div>
+      <div class="subtitle">// SLIDING PUZZLE // HIGHTECH EDITION //</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-val" id="moves-val">0</span>
+        <span class="stat-label">ХОДОВ</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val" id="time-val">00:00</span>
+        <span class="stat-label">ВРЕМЯ</span>
+      </div>
+    </div>
+
+    <div class="board-wrap">
+      <div class="board" id="board"></div>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="btn-shuffle">// ПЕРЕМЕШАТЬ</button>
+    </div>
+  </div>
+
+  <!-- Win modal -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-inner">
+        <div class="modal-icon">◈</div>
+        <div class="modal-title">ПОБЕДА</div>
+        <div class="modal-sub">
+          ПАЗЛ СОБРАН<br>
+          ХОДОВ: <span class="modal-moves" id="modal-moves">0</span><br>
+          ВРЕМЯ: <span class="modal-moves" id="modal-time">00:00</span>
+        </div>
+        <div class="modal-btns">
+          <button class="btn" id="btn-again">// ЗАНОВО</button>
+          <button class="btn btn-purple" id="btn-stop">// СТОП</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const boardEl   = document.getElementById('board');
+    const movesEl   = document.getElementById('moves-val');
+    const timeEl    = document.getElementById('time-val');
+    const modal     = document.getElementById('modal');
+    const modalMoves = document.getElementById('modal-moves');
+    const modalTime  = document.getElementById('modal-time');
+
+    let state = [];
+    let emptyIndex = 15;
+    let moves = 0;
+    let seconds = 0;
+    let timer = null;
+    let gameActive = false;
+    let animating = false;
+
+    function solved() {
+      for (let i = 0; i < 15; i++) if (state[i] !== i + 1) return false;
+      return state[15] === 0;
+    }
+
+    function initSolved() {
+      state = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0];
+      emptyIndex = 15;
+    }
+
+    function shuffle() {
+      initSolved();
+      const count = 300 + Math.floor(Math.random() * 200);
+      let prev = -1;
+      for (let i = 0; i < count; i++) {
+        const neighbors = getNeighbors(emptyIndex).filter(n => n !== prev);
+        const pick = neighbors[Math.floor(Math.random() * neighbors.length)];
+        state[emptyIndex] = state[pick];
+        state[pick] = 0;
+        prev = emptyIndex;
+        emptyIndex = pick;
+      }
+    }
+
+    function getNeighbors(idx) {
+      const row = Math.floor(idx / 4);
+      const col = idx % 4;
+      const result = [];
+      if (row > 0) result.push(idx - 4);
+      if (row < 3) result.push(idx + 4);
+      if (col > 0) result.push(idx - 1);
+      if (col < 3) result.push(idx + 1);
+      return result;
+    }
+
+    function isNeighborOfEmpty(idx) {
+      return getNeighbors(emptyIndex).includes(idx);
+    }
+
+    function render() {
+      boardEl.innerHTML = '';
+      state.forEach((val, idx) => {
+        const tile = document.createElement('div');
+        tile.className = 'tile' + (val === 0 ? ' empty' : '');
+        if (val !== 0) {
+          tile.textContent = val;
+          if (val === idx + 1) tile.classList.add('correct');
+          tile.addEventListener('click', () => onTileClick(idx));
+        }
+        boardEl.appendChild(tile);
+      });
+    }
+
+    function onTileClick(idx) {
+      if (!gameActive || animating || state[idx] === 0) return;
+      if (!isNeighborOfEmpty(idx)) return;
+
+      animating = true;
+      const tile = boardEl.children[idx];
+      tile.classList.add('active');
+
+      state[emptyIndex] = state[idx];
+      state[idx] = 0;
+      emptyIndex = idx;
+      moves++;
+      movesEl.textContent = moves;
+
+      setTimeout(() => {
+        animating = false;
+        render();
+        if (solved()) onWin();
+      }, 140);
+    }
+
+    function startTimer() {
+      stopTimer();
+      seconds = 0;
+      timeEl.textContent = '00:00';
+      timer = setInterval(() => {
+        seconds++;
+        timeEl.textContent = formatTime(seconds);
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timer) { clearInterval(timer); timer = null; }
+    }
+
+    function formatTime(s) {
+      const m = Math.floor(s / 60);
+      const sec = s % 60;
+      return String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+    }
+
+    function startGame() {
+      shuffle();
+      moves = 0;
+      movesEl.textContent = '0';
+      gameActive = true;
+      animating = false;
+      render();
+      startTimer();
+    }
+
+    function onWin() {
+      stopTimer();
+      gameActive = false;
+      modalMoves.textContent = moves;
+      modalTime.textContent = formatTime(seconds);
+      modal.classList.add('show');
+    }
+
+    document.getElementById('btn-shuffle').addEventListener('click', () => {
+      modal.classList.remove('show');
+      startGame();
+    });
+
+    document.getElementById('btn-again').addEventListener('click', () => {
+      modal.classList.remove('show');
+      startGame();
+    });
+
+    document.getElementById('btn-stop').addEventListener('click', () => {
+      modal.classList.remove('show');
+      stopTimer();
+      gameActive = false;
+    });
+
+    // Start
+    startGame();
+  </script>
+</body>
+</html>
