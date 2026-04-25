@@ -64,6 +64,7 @@
                 android:fontFamily="monospace"
                 android:textStyle="bold" />
             <TextView
+                android:id="@+id/tvMovesLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/label_moves"
@@ -74,6 +75,7 @@
         </LinearLayout>
 
         <View
+            android:id="@+id/statsDivider"
             android:layout_width="1dp"
             android:layout_height="28dp"
             android:background="@color/divider"
@@ -94,6 +96,7 @@
                 android:fontFamily="monospace"
                 android:textStyle="bold" />
             <TextView
+                android:id="@+id/tvTimeLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/label_time"
@@ -104,7 +107,7 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Board outer (acts as glowing border) -->
+    <!-- Board outer (acts as border) -->
     <FrameLayout
         android:id="@+id/boardOuter"
         android:layout_width="0dp"
@@ -117,7 +120,7 @@
         app:layout_constraintTop_toBottomOf="@id/statsRow"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/btnShuffle"
+        app:layout_constraintBottom_toTopOf="@id/bottomButtons"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintVertical_bias="0.5">
 
@@ -129,25 +132,51 @@
             android:clipChildren="false" />
     </FrameLayout>
 
-    <!-- Shuffle button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnShuffle"
+    <!-- Bottom buttons row -->
+    <LinearLayout
+        android:id="@+id/bottomButtons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/btn_shuffle"
-        android:textColor="@color/cyan"
-        android:textSize="12sp"
-        android:fontFamily="monospace"
-        android:letterSpacing="0.2"
-        app:backgroundTint="@android:color/transparent"
-        app:strokeColor="@color/cyan"
-        app:strokeWidth="1dp"
-        app:cornerRadius="2dp"
-        android:paddingHorizontal="36dp"
-        android:paddingVertical="14dp"
+        android:orientation="horizontal"
+        android:gravity="center"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="28dp" />
+        android:layout_marginBottom="28dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_style"
+            android:textColor="@color/cyan"
+            android:textSize="12sp"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.15"
+            app:backgroundTint="@android:color/transparent"
+            app:strokeColor="@color/cyan"
+            app:strokeWidth="1dp"
+            app:cornerRadius="2dp"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="14dp"
+            android:layout_marginEnd="12dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnShuffle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_shuffle"
+            android:textColor="@color/cyan"
+            android:textSize="12sp"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.2"
+            app:backgroundTint="@android:color/transparent"
+            app:strokeColor="@color/cyan"
+            app:strokeWidth="1dp"
+            app:cornerRadius="2dp"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="14dp" />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

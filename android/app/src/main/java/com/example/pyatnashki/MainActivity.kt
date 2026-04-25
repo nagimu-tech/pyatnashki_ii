@@ -2,17 +2,20 @@ package com.example.pyatnashki
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.view.Gravity
 import android.widget.Button
 import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -21,6 +24,7 @@ import com.example.pyatnashki.databinding.ActivityMainBinding
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var currentTheme: GameTheme
 
     private val state = IntArray(16)
     private var emptyIndex = 15
@@ -47,12 +51,16 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        currentTheme = ThemeManager.load(this)
+
         binding.btnShuffle.setOnClickListener { startGame() }
+        binding.btnStyle.setOnClickListener { showStyleDialog() }
 
         binding.board.post {
             val padding = dp(10) * 2
             val gaps = dp(6) * 3
             tileSize = (binding.board.width - padding - gaps) / 4
+            applyTheme()
             startGame()
         }
     }
@@ -68,6 +76,61 @@ class MainActivity : AppCompatActivity() {
             hide(WindowInsetsCompat.Type.systemBars())
             systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
+    }
+
+    // ── Theme ────────────────────────────────────────────────────────────────────
+
+    private fun applyTheme() {
+        val t = currentTheme
+
+        binding.root.setBackgroundColor(t.bgColor)
+        binding.board.setBackgroundColor(t.boardBgColor)
+
+        binding.boardOuter.background = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            setColor(t.boardBorderColor)
+            cornerRadius = dp(6).toFloat()
+        }
+
+        binding.tvTitle.text = t.titleText
+        binding.tvTitle.setTextColor(t.titleColor)
+        binding.tvSubtitle.text = t.subtitleText
+        binding.tvSubtitle.setTextColor(t.mutedColor)
+
+        binding.tvMoves.setTextColor(t.statsColor)
+        binding.tvTime.setTextColor(t.statsColor)
+        binding.tvMovesLabel.setTextColor(t.mutedColor)
+        binding.tvTimeLabel.setTextColor(t.mutedColor)
+        binding.statsDivider.setBackgroundColor(t.mutedColor)
+
+        val strokeList = ColorStateList.valueOf(t.btnStrokeColor)
+        binding.btnShuffle.setTextColor(t.btnStrokeColor)
+        binding.btnShuffle.strokeColor = strokeList
+        binding.btnStyle.setTextColor(t.btnStrokeColor)
+        binding.btnStyle.strokeColor = strokeList
+    }
+
+    private fun showStyleDialog() {
+        val themes = ThemeManager.themes
+        val currentIdx = themes.indexOfFirst { it.id == currentTheme.id }.coerceAtLeast(0)
+
+        val items: Array<CharSequence> = themes.map { theme ->
+            SpannableString("⬤  ${theme.name}").apply {
+                setSpan(ForegroundColorSpan(theme.titleColor), 0, 1, 0)
+            }
+        }.toTypedArray()
+
+        AlertDialog.Builder(this, R.style.WinDialog)
+            .setTitle("Выбери стиль")
+            .setSingleChoiceItems(items, currentIdx) { dialog, which ->
+                currentTheme = themes[which]
+                ThemeManager.save(this, currentTheme.id)
+                applyTheme()
+                renderBoard()
+                dialog.dismiss()
+            }
+            .setNegativeButton("Закрыть") { dialog, _ -> dialog.dismiss() }
+            .show()
     }
 
     // ── Game logic ──────────────────────────────────────────────────────────────
@@ -128,15 +191,22 @@ class MainActivity : AppCompatActivity() {
 
     private fun makeTile(pos: Int, value: Int): Button {
         val isCorrect = value == pos + 1
+        val t = currentTheme
         return Button(this).apply {
             text = value.toString()
             textSize = (tileSize / resources.displayMetrics.density / 4.2f).coerceIn(14f, 30f)
-            setTextColor(if (isCorrect) Color.parseColor("#00FF80") else Color.parseColor("#00F5FF"))
-            typeface = Typeface.MONOSPACE
-            background = ContextCompat.getDrawable(
-                this@MainActivity,
-                if (isCorrect) R.drawable.tile_correct else R.drawable.tile_normal
-            )
+            setTextColor(if (isCorrect) t.correctTileTextColor else t.tileTextColor)
+            typeface = when (t.typeface) {
+                1 -> Typeface.SERIF
+                2 -> Typeface.SANS_SERIF
+                else -> Typeface.MONOSPACE
+            }
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                setColor(t.tileBgColor)
+                setStroke(dp(1), if (isCorrect) t.correctTileBorderColor else t.tileBorderColor)
+                cornerRadius = dp(t.tileCornerDp).toFloat()
+            }
             elevation = dp(3).toFloat()
             tag = pos
             gravity = Gravity.CENTER
@@ -188,7 +258,6 @@ class MainActivity : AppCompatActivity() {
     private fun showWin() {
         gameActive = false
         handler.removeCallbacks(timerRunnable)
-
         AlertDialog.Builder(this, R.style.WinDialog)
             .setTitle("◈  ПОБЕДА")
             .setMessage(
