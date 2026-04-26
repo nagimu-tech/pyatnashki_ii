@@ -12,14 +12,22 @@ import android.os.Looper
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.Gravity
+import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.example.pyatnashki.databinding.ActivityMainBinding
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -55,6 +63,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnShuffle.setOnClickListener { startGame() }
         binding.btnStyle.setOnClickListener { showStyleDialog() }
+        binding.btnProfile.setOnClickListener { showProfileDialog() }
 
         binding.board.post {
             val padding = dp(10) * 2
@@ -108,6 +117,8 @@ class MainActivity : AppCompatActivity() {
         binding.btnShuffle.strokeColor = strokeList
         binding.btnStyle.setTextColor(t.btnStrokeColor)
         binding.btnStyle.strokeColor = strokeList
+        binding.btnProfile.setTextColor(t.btnStrokeColor)
+        binding.btnProfile.strokeColor = strokeList
     }
 
     private fun showStyleDialog() {
@@ -131,6 +142,107 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton("Закрыть") { dialog, _ -> dialog.dismiss() }
             .show()
+    }
+
+    // ── Profile / Settings ───────────────────────────────────────────────────────
+
+    private fun showProfileDialog() {
+        val t = currentTheme
+        val ctx = this
+
+        val root = LinearLayout(ctx).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(20), dp(12), dp(20), dp(8))
+        }
+
+        // Name label
+        root.addView(TextView(ctx).apply {
+            text = "ИМЯ ИГРОКА"
+            textSize = 10f
+            setTextColor(t.mutedColor)
+            letterSpacing = 0.12f
+        })
+
+        // Name input
+        val editName = EditText(ctx).apply {
+            setText(PlayerManager.getName(ctx))
+            hint = "введите имя..."
+            setTextColor(t.tileTextColor)
+            setHintTextColor(t.mutedColor)
+            textSize = 15f
+            maxLines = 1
+            setPadding(0, dp(2), 0, dp(6))
+        }
+        root.addView(editName)
+
+        // Divider
+        root.addView(makeDivider(t.mutedColor))
+
+        // Stats
+        val wins = PlayerManager.getWins(ctx)
+        val bestMoves = PlayerManager.getBestMoves(ctx)
+        val bestTime  = PlayerManager.getBestTime(ctx)
+
+        val statsBuilder = StringBuilder()
+        statsBuilder.append("ПОБЕД:  $wins\n")
+        if (bestMoves < Int.MAX_VALUE) statsBuilder.append("ЛУЧШИЙ РЕЗУЛЬТАТ:  $bestMoves ходов\n")
+        if (bestTime  < Int.MAX_VALUE) statsBuilder.append("ЛУЧШЕЕ ВРЕМЯ:  ${formatTime(bestTime)}\n")
+
+        root.addView(TextView(ctx).apply {
+            text = statsBuilder.toString().trimEnd('\n')
+            textSize = 13f
+            setTextColor(t.tileTextColor)
+            setPadding(0, dp(4), 0, dp(4))
+        })
+
+        // History
+        val history = PlayerManager.getHistory(ctx)
+        if (history.isNotEmpty()) {
+            root.addView(makeDivider(t.mutedColor))
+
+            root.addView(TextView(ctx).apply {
+                text = "ИСТОРИЯ ИГР"
+                textSize = 10f
+                setTextColor(t.mutedColor)
+                letterSpacing = 0.12f
+                setPadding(0, 0, 0, dp(4))
+            })
+
+            val histLayout = LinearLayout(ctx).apply { orientation = LinearLayout.VERTICAL }
+            val fmt = SimpleDateFormat("dd.MM  HH:mm", Locale.getDefault())
+            history.take(10).forEachIndexed { i, rec ->
+                val dateStr = if (rec.timestamp > 0) fmt.format(Date(rec.timestamp)) else "—"
+                histLayout.addView(TextView(ctx).apply {
+                    text = "$dateStr  —  ${rec.moves} ход.  ${formatTime(rec.seconds)}"
+                    textSize = 11f
+                    setTextColor(if (i == 0) t.tileTextColor else t.mutedColor)
+                    setPadding(0, dp(2), 0, dp(2))
+                })
+            }
+
+            root.addView(ScrollView(ctx).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, dp(120)
+                )
+                addView(histLayout)
+            })
+        }
+
+        AlertDialog.Builder(ctx, R.style.WinDialog)
+            .setTitle("ПРОФИЛЬ")
+            .setView(root)
+            .setPositiveButton("СОХРАНИТЬ") { _, _ ->
+                PlayerManager.setName(ctx, editName.text.toString().trim())
+            }
+            .setNegativeButton("ЗАКРЫТЬ") { dialog, _ -> dialog.dismiss() }
+            .show()
+    }
+
+    private fun makeDivider(color: Int): View = View(this).apply {
+        layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, dp(1)
+        ).apply { setMargins(0, dp(8), 0, dp(8)) }
+        setBackgroundColor(color)
     }
 
     // ── Game logic ──────────────────────────────────────────────────────────────
@@ -192,32 +304,56 @@ class MainActivity : AppCompatActivity() {
     private fun makeTile(pos: Int, value: Int): Button {
         val isCorrect = value == pos + 1
         val t = currentTheme
+        val depth3d = if (t.is3D) (tileSize * 0.09f).toInt() else 0
+        val hasEmoji = t.tileEmoji.isNotEmpty()
+        val displayText = if (hasEmoji) "${t.tileEmoji}\n$value" else value.toString()
+
         return Button(this).apply {
-            text = value.toString()
-            textSize = (tileSize / resources.displayMetrics.density / 4.2f).coerceIn(14f, 30f)
+            text = displayText
+            textSize = when {
+                hasEmoji -> (tileSize / resources.displayMetrics.density / 5.5f).coerceIn(11f, 22f)
+                else     -> (tileSize / resources.displayMetrics.density / 4.2f).coerceIn(14f, 30f)
+            }
             setTextColor(if (isCorrect) t.correctTileTextColor else t.tileTextColor)
             typeface = when (t.typeface) {
-                1 -> Typeface.SERIF
-                2 -> Typeface.SANS_SERIF
+                1    -> Typeface.SERIF
+                2    -> Typeface.SANS_SERIF
                 else -> Typeface.MONOSPACE
             }
-            background = GradientDrawable().apply {
-                shape = GradientDrawable.RECTANGLE
-                setColor(t.tileBgColor)
-                setStroke(dp(1), if (isCorrect) t.correctTileBorderColor else t.tileBorderColor)
-                cornerRadius = dp(t.tileCornerDp).toFloat()
+            background = if (t.is3D) {
+                Tile3DDrawable(
+                    baseColor   = if (isCorrect) mixColor(t.tileBgColor, t.correctTileBorderColor, 0.25f)
+                                  else t.tileBgColor,
+                    borderColor = if (isCorrect) t.correctTileBorderColor else t.tileBorderColor,
+                    cornerPx    = dp(t.tileCornerDp).toFloat()
+                )
+            } else {
+                GradientDrawable().apply {
+                    shape = GradientDrawable.RECTANGLE
+                    setColor(t.tileBgColor)
+                    setStroke(dp(1), if (isCorrect) t.correctTileBorderColor else t.tileBorderColor)
+                    cornerRadius = dp(t.tileCornerDp).toFloat()
+                }
             }
-            elevation = dp(3).toFloat()
+            elevation = dp(if (t.is3D) 1 else 3).toFloat()
             tag = pos
             gravity = Gravity.CENTER
             isAllCaps = false
-            setPadding(0, 0, 0, 0)
+            if (t.is3D) setPadding(0, 0, depth3d, depth3d)
+            else        setPadding(0, 0, 0, 0)
             layoutParams = FrameLayout.LayoutParams(tileSize, tileSize).apply {
                 leftMargin = tileX(pos)
-                topMargin = tileY(pos)
+                topMargin  = tileY(pos)
             }
             setOnClickListener { onTileClick(pos) }
         }
+    }
+
+    private fun mixColor(c1: Int, c2: Int, ratio: Float): Int {
+        val r = (Color.red(c1)   * (1 - ratio) + Color.red(c2)   * ratio).toInt()
+        val g = (Color.green(c1) * (1 - ratio) + Color.green(c2) * ratio).toInt()
+        val b = (Color.blue(c1)  * (1 - ratio) + Color.blue(c2)  * ratio).toInt()
+        return Color.rgb(r, g, b)
     }
 
     // ── Interaction ─────────────────────────────────────────────────────────────
@@ -258,10 +394,15 @@ class MainActivity : AppCompatActivity() {
     private fun showWin() {
         gameActive = false
         handler.removeCallbacks(timerRunnable)
+
+        PlayerManager.addRecord(this, moveCount, elapsedSeconds, currentTheme.id)
+
+        val name = PlayerManager.getName(this).let { if (it.isNotEmpty()) "$it!\n" else "" }
+
         AlertDialog.Builder(this, R.style.WinDialog)
             .setTitle("◈  ПОБЕДА")
             .setMessage(
-                "Пазл собран!\n\n" +
+                "${name}Пазл собран!\n\n" +
                 "Ходов:  $moveCount\n" +
                 "Время:  ${formatTime(elapsedSeconds)}"
             )

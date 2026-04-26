@@ -7,4 +7,5 @@
     <string name="btn_style">⚙ СТИЛИ</string>
     <string name="label_moves">ХОДОВ</string>
     <string name="label_time">ВРЕМЯ</string>
+    <string name="btn_profile">👤 ПРОФИЛЬ</string>
 </resources>

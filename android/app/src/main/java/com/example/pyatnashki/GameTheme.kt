@@ -19,4 +19,6 @@ data class GameTheme(
     val subtitleText: String,
     val tileCornerDp: Int,
     val typeface: Int,   // 0=MONOSPACE, 1=SERIF, 2=SANS_SERIF
+    val is3D: Boolean = false,
+    val tileEmoji: String = "",
 )

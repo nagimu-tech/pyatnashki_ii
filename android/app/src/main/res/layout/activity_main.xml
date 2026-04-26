@@ -132,50 +132,77 @@
             android:clipChildren="false" />
     </FrameLayout>
 
-    <!-- Bottom buttons row -->
+    <!-- Bottom buttons -->
     <LinearLayout
         android:id="@+id/bottomButtons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:gravity="center"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="28dp">
+        android:layout_marginBottom="24dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnStyle"
+        <!-- Main row: style + shuffle -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/btn_style"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_style"
+                android:textColor="@color/cyan"
+                android:textSize="12sp"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.15"
+                app:backgroundTint="@android:color/transparent"
+                app:strokeColor="@color/cyan"
+                app:strokeWidth="1dp"
+                app:cornerRadius="2dp"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="12dp"
+                android:layout_marginEnd="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnShuffle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_shuffle"
+                android:textColor="@color/cyan"
+                android:textSize="12sp"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.2"
+                app:backgroundTint="@android:color/transparent"
+                app:strokeColor="@color/cyan"
+                app:strokeWidth="1dp"
+                app:cornerRadius="2dp"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="12dp" />
+
+        </LinearLayout>
+
+        <!-- Profile button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnProfile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_profile"
             android:textColor="@color/cyan"
-            android:textSize="12sp"
+            android:textSize="10sp"
             android:fontFamily="monospace"
             android:letterSpacing="0.15"
             app:backgroundTint="@android:color/transparent"
             app:strokeColor="@color/cyan"
             app:strokeWidth="1dp"
             app:cornerRadius="2dp"
-            android:paddingHorizontal="20dp"
-            android:paddingVertical="14dp"
-            android:layout_marginEnd="12dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnShuffle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/btn_shuffle"
-            android:textColor="@color/cyan"
-            android:textSize="12sp"
-            android:fontFamily="monospace"
-            android:letterSpacing="0.2"
-            app:backgroundTint="@android:color/transparent"
-            app:strokeColor="@color/cyan"
-            app:strokeWidth="1dp"
-            app:cornerRadius="2dp"
             android:paddingHorizontal="24dp"
-            android:paddingVertical="14dp" />
+            android:paddingVertical="8dp"
+            android:layout_marginTop="8dp" />
 
     </LinearLayout>
 
